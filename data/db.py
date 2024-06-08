@@ -2,10 +2,11 @@ import pandas as pd
 import numpy as np
 import sqlalchemy
 
+PATH = "C:/Users/Dell/Desktop/CedAlgo/database/"
 
 class connect_db:
     
-    def __init__(self, name : str, interval = "1d", path = "C:/Users/cc/Desktop/CedAlgo/database/"):
+    def __init__(self, name : str, interval = "1d", path = PATH):
         self.name = name
         self.interval = interval
         self.path = path
@@ -20,14 +21,6 @@ class connect_db:
         return data
     
     
-    def update(self, assets = None, interval = "1d"):
-        if assets is None:
-            try:
-                all_assets = asset_binance()
-                update_data(all_assets, interval)
-            except:
-                pass
-        else:
-            update_data(assets, interval)
+
     
 

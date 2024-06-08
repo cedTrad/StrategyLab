@@ -6,7 +6,7 @@ from plot import subplot, plot_candle, add_line, add_line2
 
 from feature.indicator import *
 from data.get_data import *
-from data.data import connect_db
+from data.db import connect_db
 
 
 

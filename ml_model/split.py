@@ -19,21 +19,3 @@ class PurgedKFold(KFold):
 
 
 
-from sklearn.model_selection import KFold
-
-class PurgedKFold(KFold):
-    def __init__(self, n_splits=5, purge_length=1, embargo_length=1):
-        super().__init__(n_splits=n_splits, shuffle=False)
-        self.purge_length = purge_length
-        self.embargo_length = embargo_length
-
-    def split(self, X, y=None, groups=None):
-        indices = np.arange(len(X))
-        test_starts = [(i[0], i[-1] + 1) for i in np.array_split(np.arange(len(X)), self.n_splits)]
-
-        for i, j in test_starts:
-            purge_start = max(i - self.purge_length, 0)
-            purge_end = min(j + self.embargo_length, len(X))
-            train_indices = np.concatenate((indices[:purge_start], indices[purge_end:]))
-            test_indices = indices[i:j]
-            yield train_indices, test_indices

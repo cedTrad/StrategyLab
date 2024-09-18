@@ -1,5 +1,4 @@
 from sklearn.ensemble import RandomForestClassifier
-from ml_model.pipeline import get_pipeline, save_pipeline
 import joblib
 
 def train_model(X, y):    

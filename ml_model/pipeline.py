@@ -1,3 +1,5 @@
+import os
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
@@ -111,6 +113,14 @@ def get_pipeline():
 ])
 
 
-def save_pipeline(pipeline, filename='feature_pipeline.pkl'):
-    import joblib
+path = r"C:\Users\Dell\Desktop\CedAlgo\C-Syst\system\decision\strategies"
+path = os.path.join(path, "fpipeline.pkl")
+def save_pipeline(filename=path):
+    pipeline = get_pipeline()
     joblib.dump(pipeline, filename)
+
+
+
+ 
+if __name__ == "__main__":
+    save_pipeline()

@@ -29,6 +29,38 @@ class SMACalculator(BaseEstimator, TransformerMixin):
         X[f'SMA_{self.window}'] = X['close'].rolling(window=self.window).mean()
         X.columns = X.columns.astype(str)
         return X
+    
+class ComputeRelativeSmaGAP(BaseEstimator, TransformerMixin):
+    def __init__(self, windows):
+        self.windows = windows
+    
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        temp_cols = []
+        for i, window in enumerate(self.windows):
+            X[f'sma{i+1}'] = X['close'].rolling(window=window).mean()
+            temp_cols.append(f'sma{i+1}')
+            
+        for i in range(len(self.windows) - 1):
+            X[f'gap_sma{i+1}_sma{i+2}'] = (X[f'sma{i+1}'] - X[f'sma{i+2}']) * 100 / X[f'sma{i+2}']
+            
+        for i in range(1, len(self.windows)):
+            X[f'rel_gap_sma1_sma{i+1}'] = (X['sma1'] - X[f'sma{i+1}']) * 100 / X[f'sma{i+1}']
+            X[f"ret_{i}"] = X['close'].pct_change(i)
+        
+        X['rel_gap_sma2_sma6'] = (X['sma2'] - X['sma6']) * 100 / X['sma6']
+        X['rel_gap_sma2_sma5'] = (X['sma2'] - X['sma5']) * 100 / X['sma5']
+        
+        X['ret'] = X['close'].pct_change()
+        X['stage_1'] = np.where(X['gap_sma5_sma6'] > 0, 1, -1)
+        X = X.drop(columns = temp_cols)
+        X.columns = X.columns.astype(str)
+        return X
+
+
+
 
 class RSICalculator(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
@@ -74,12 +106,13 @@ class OBVCalculator(BaseEstimator, TransformerMixin):
         X.columns = X.columns.astype(str)
         return X
 
-class DropNaTransformer(BaseEstimator, TransformerMixin):
+class DropTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
         X.dropna(inplace=True)
+        X = X.drop(columns = ['open', 'high', 'low', 'close', 'volume'])
         X.columns = X.columns.astype(str)
         return X
 
@@ -98,6 +131,15 @@ class ScalerWrapper(BaseEstimator, TransformerMixin):
         return pd.DataFrame(X_scaled, index=self.index, columns=self.columns)
 
 
+
+# Définir et exporter le pipeline
+def get_pipeline():
+    return Pipeline([
+    ('relative_gap', ComputeRelativeSmaGAP(windows = [3, 6, 12, 18, 24, 72, 24*12])),
+    ('drop', DropTransformer())
+])
+
+"""
 # Définir et exporter le pipeline
 def get_pipeline():
     return Pipeline([
@@ -108,19 +150,14 @@ def get_pipeline():
     ('macd', MACDCalculator()),
     ('high_low_range', HighLowRangeCalculator()),
     ('obv', OBVCalculator()),
-    ('dropna', DropNaTransformer()),
+    ('drop', DropTransformer()),
     ('standard_scaler', ScalerWrapper(StandardScaler()))
 ])
+"""
 
 
-path = r"C:\Users\Dell\Desktop\CedAlgo\C-Syst\system\decision\strategies"
-path = os.path.join(path, "fpipeline.pkl")
-def save_pipeline(filename=path):
+def save_pipeline(filename):
     pipeline = get_pipeline()
     joblib.dump(pipeline, filename)
 
 
-
- 
-if __name__ == "__main__":
-    save_pipeline()

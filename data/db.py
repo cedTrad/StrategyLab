@@ -12,11 +12,11 @@ class connect_db:
         self.path = path
         self.engine = sqlalchemy.create_engine('sqlite:///'+self.path+self.name+"_"+self.interval+".db")
     
-    def get_data(self, symbol , start = '2017', end = '2023'):
+    def get_data(self, symbol , start = '2017', end = '2024'):
         data = pd.read_sql(symbol+"USDT", self.engine)
         data.set_index('time' , inplace=True)
         data['volume'] = pd.to_numeric(data['volume'])
-        data = data[['open', 'high', 'low' , 'close' , 'volume']]
+        #data = data[['open', 'high', 'low' , 'close' , 'volume']]
         data = data.loc[start:end].copy()
         return data
     
